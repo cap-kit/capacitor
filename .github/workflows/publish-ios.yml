@@ -4,7 +4,13 @@ on:
   push:
     tags:
       - 'ios-*'
+
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag name (e.g. ios-8.0.2-spm-fix1)'
+        required: true
+        type: string
 
 jobs:
   publish-ios:
@@ -49,6 +55,20 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22.x
+
+      # --------------------------------------------------------------------
+      # Resolve release tag
+      # --------------------------------------------------------------------
+      - name: Resolve release tag
+        id: tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "tag=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "Using release tag: $(cat $GITHUB_OUTPUT)"
 
       # --------------------------------------------------------------------
       # Build XCFrameworks (ABI stable, SPM-safe)
@@ -116,27 +136,41 @@ jobs:
       # --------------------------------------------------------------------
       # Zip XCFrameworks (SwiftPM requires .zip)
       # --------------------------------------------------------------------
-      - name: Zip XCFrameworks for SwiftPM
+      - name: Zip XCFrameworks
         run: |
           mkdir -p release
           cd xcframeworks
           zip -r ../release/Capacitor.xcframework.zip Capacitor.xcframework
           zip -r ../release/Cordova.xcframework.zip Cordova.xcframework
           cd ..
-          ls -lh release
 
       # --------------------------------------------------------------------
-      # Create GitHub Release (SPM-compatible)
+      # Compute SwiftPM checksums (CRITICAL STEP)
+      # --------------------------------------------------------------------
+      - name: Compute SwiftPM checksums
+        id: checksums
+        run: |
+          CAP_CHECKSUM=$(swift package compute-checksum release/Capacitor.xcframework.zip)
+          CORD_CHECKSUM=$(swift package compute-checksum release/Cordova.xcframework.zip)
+
+          echo "Capacitor checksum: $CAP_CHECKSUM"
+          echo "Cordova checksum:   $CORD_CHECKSUM"
+
+          echo "capacitor=$CAP_CHECKSUM" >> "$GITHUB_OUTPUT"
+          echo "cordova=$CORD_CHECKSUM" >> "$GITHUB_OUTPUT"
+
+      # --------------------------------------------------------------------
+      # Create GitHub Release
       # --------------------------------------------------------------------
       - name: Create GitHub Release and upload XCFrameworks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_NAME="${GITHUB_REF_NAME:-spm-manual}"
+          TAG="${{ steps.tag.outputs.tag }}"
 
-          gh release create "$TAG_NAME" \
+          gh release create "$TAG" \
             release/Capacitor.xcframework.zip \
             release/Cordova.xcframework.zip \
-            --title "iOS XCFrameworks $TAG_NAME" \
-            --notes "Temporary SwiftPM workaround. Built with BUILD_LIBRARY_FOR_DISTRIBUTION=YES." \
+            --title "iOS XCFrameworks $TAG" \
+            --notes "SwiftPM checksums:\n\nCapacitor: ${{ steps.checksums.outputs.capacitor }}\nCordova: ${{ steps.checksums.outputs.cordova }}" \
             --prerelease
