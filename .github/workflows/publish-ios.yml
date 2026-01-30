@@ -30,6 +30,23 @@ jobs:
           fetch-depth: 0
           ref: 'main'
 
+      - name: Inspect repository layout
+        run: |
+          echo "PWD:"
+          pwd
+          echo
+          echo "GITHUB_WORKSPACE:"
+          echo "$GITHUB_WORKSPACE"
+          echo
+          echo "Root listing:"
+          ls -la
+          echo
+          echo "ios directory:"
+          ls -la ios || echo "ios directory not found"
+          echo
+          echo "Find Capacitor.xcodeproj:"
+          find . -name Capacitor.xcodeproj || true
+
       # --------------------------------------------------------------------
       # Build XCFrameworks (ABI stable, SPM-safe)
       # --------------------------------------------------------------------
