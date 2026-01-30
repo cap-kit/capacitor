@@ -41,31 +41,69 @@ jobs:
           OUTPUT_DIR=$PWD/ios
           mkdir -p "$OUTPUT_DIR"
 
+          # ------------------------------------------------------------
+          # Capacitor
+          # ------------------------------------------------------------
+          echo "Building Capacitor (device)"
+          cd ios/Capacitor
           xcodebuild \
+            -project Capacitor.xcodeproj \
             -scheme Capacitor \
             -configuration Release \
             -sdk iphoneos \
-            -derivedDataPath "$DERIVED_DATA/device" \
+            -derivedDataPath "$DERIVED_DATA/capacitor-device" \
             BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
             SKIP_INSTALL=NO
 
+          echo "Building Capacitor (simulator)"
           xcodebuild \
+            -project Capacitor.xcodeproj \
             -scheme Capacitor \
             -configuration Release \
             -sdk iphonesimulator \
-            -derivedDataPath "$DERIVED_DATA/simulator" \
+            -derivedDataPath "$DERIVED_DATA/capacitor-sim" \
             BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
             SKIP_INSTALL=NO
 
+          cd ../..
+
+          echo "Creating Capacitor.xcframework"
           xcodebuild -create-xcframework \
-            -framework "$DERIVED_DATA/device/Build/Products/Release-iphoneos/Capacitor.framework" \
-            -framework "$DERIVED_DATA/simulator/Build/Products/Release-iphonesimulator/Capacitor.framework" \
+            -framework "$DERIVED_DATA/capacitor-device/Build/Products/Release-iphoneos/Capacitor.framework" \
+            -framework "$DERIVED_DATA/capacitor-sim/Build/Products/Release-iphonesimulator/Capacitor.framework" \
             -output "$OUTPUT_DIR/Capacitor.xcframework"
 
+          # ------------------------------------------------------------
+          # CapacitorCordova
+          # ------------------------------------------------------------
+          echo "Building CapacitorCordova (device)"
+          cd ios/CapacitorCordova
+          xcodebuild \
+            -project CapacitorCordova.xcodeproj \
+            -scheme CapacitorCordova \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath "$DERIVED_DATA/cordova-device" \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            SKIP_INSTALL=NO
+
+          echo "Building CapacitorCordova (simulator)"
+          xcodebuild \
+            -project CapacitorCordova.xcodeproj \
+            -scheme CapacitorCordova \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -derivedDataPath "$DERIVED_DATA/cordova-sim" \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            SKIP_INSTALL=NO
+
+          cd ../..
+
+          echo "Creating CapacitorCordova.xcframework"
           xcodebuild -create-xcframework \
-            -framework "$DERIVED_DATA/device/Build/Products/Release-iphoneos/Cordova.framework" \
-            -framework "$DERIVED_DATA/simulator/Build/Products/Release-iphonesimulator/Cordova.framework" \
-            -output "$OUTPUT_DIR/Cordova.xcframework"
+            -framework "$DERIVED_DATA/cordova-device/Build/Products/Release-iphoneos/CapacitorCordova.framework" \
+            -framework "$DERIVED_DATA/cordova-sim/Build/Products/Release-iphonesimulator/CapacitorCordova.framework" \
+            -output "$OUTPUT_DIR/CapacitorCordova.xcframework"
 
       # --------------------------------------------------------------------
       # Upload artifacts for SPM
