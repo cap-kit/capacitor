@@ -37,8 +37,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          ROOT_DIR="$PWD"
-          CAPACITOR_REPO="$ROOT_DIR"
+          ROOT_DIR="$GITHUB_WORKSPACE"
+          CAPACITOR_REPO="$GITHUB_WORKSPACE"
           DERIVED_DATA="$ROOT_DIR/DerivedData"
           OUT_DIR="$ROOT_DIR/ios"
 
