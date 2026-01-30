@@ -57,7 +57,7 @@ jobs:
           ROOT_DIR="$GITHUB_WORKSPACE"
           CAPACITOR_REPO="$GITHUB_WORKSPACE"
           DERIVED_DATA="$ROOT_DIR/DerivedData"
-          OUT_DIR="$ROOT_DIR/ios"
+          OUT_DIR="$ROOT_DIR/xcframeworks"
 
           rm -rf "$DERIVED_DATA" "$OUT_DIR"
           mkdir -p "$OUT_DIR"
