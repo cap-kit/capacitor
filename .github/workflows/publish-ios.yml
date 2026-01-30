@@ -140,5 +140,5 @@ jobs:
         with:
           name: ios-xcframeworks
           path: |
-            ios/Capacitor.xcframework
-            ios/Cordova.xcframework
+            xcframeworks/Capacitor.xcframework
+            xcframeworks/Cordova.xcframework
