@@ -1,6 +1,9 @@
 name: Publish Native iOS Library
 
 on:
+  push:
+    tags:
+      - 'ios-*'
   workflow_dispatch:
 
 jobs:
@@ -55,22 +58,15 @@ jobs:
           set -euo pipefail
 
           ROOT_DIR="$GITHUB_WORKSPACE"
-          CAPACITOR_REPO="$GITHUB_WORKSPACE"
           DERIVED_DATA="$ROOT_DIR/DerivedData"
           OUT_DIR="$ROOT_DIR/xcframeworks"
 
           rm -rf "$DERIVED_DATA" "$OUT_DIR"
           mkdir -p "$OUT_DIR"
 
-          echo "Using DerivedData: $DERIVED_DATA"
-          echo "Output dir: $OUT_DIR"
-
-          # ------------------------------------------------------------
-          # BUILD: Capacitor
-          # ------------------------------------------------------------
-          echo "Building Capacitor (iphoneos)..."
+          # Capacitor
           xcodebuild \
-            -project "$CAPACITOR_REPO/ios/Capacitor/Capacitor.xcodeproj" \
+            -project ios/Capacitor/Capacitor.xcodeproj \
             -scheme Capacitor \
             -configuration Release \
             -sdk iphoneos \
@@ -78,9 +74,8 @@ jobs:
             -derivedDataPath "$DERIVED_DATA" \
             build
 
-          echo "Building Capacitor (iphonesimulator)..."
           xcodebuild \
-            -project "$CAPACITOR_REPO/ios/Capacitor/Capacitor.xcodeproj" \
+            -project ios/Capacitor/Capacitor.xcodeproj \
             -scheme Capacitor \
             -configuration Release \
             -sdk iphonesimulator \
@@ -88,12 +83,9 @@ jobs:
             -derivedDataPath "$DERIVED_DATA" \
             build
 
-          # ------------------------------------------------------------
-          # BUILD: CapacitorCordova
-          # ------------------------------------------------------------
-          echo "Building CapacitorCordova (iphoneos)..."
+          # Cordova
           xcodebuild \
-            -project "$CAPACITOR_REPO/ios/CapacitorCordova/CapacitorCordova.xcodeproj" \
+            -project ios/CapacitorCordova/CapacitorCordova.xcodeproj \
             -scheme Cordova \
             -configuration Release \
             -sdk iphoneos \
@@ -101,9 +93,8 @@ jobs:
             -derivedDataPath "$DERIVED_DATA" \
             build
 
-          echo "Building CapacitorCordova (iphonesimulator)..."
           xcodebuild \
-            -project "$CAPACITOR_REPO/ios/CapacitorCordova/CapacitorCordova.xcodeproj" \
+            -project ios/CapacitorCordova/CapacitorCordova.xcodeproj \
             -scheme Cordova \
             -configuration Release \
             -sdk iphonesimulator \
@@ -111,67 +102,41 @@ jobs:
             -derivedDataPath "$DERIVED_DATA" \
             build
 
-          # ------------------------------------------------------------
-          # CREATE XCFRAMEWORKS
-          # ------------------------------------------------------------
-          CAP_IOS="$DERIVED_DATA/Build/Products/Release-iphoneos/Capacitor.framework"
-          CAP_SIM="$DERIVED_DATA/Build/Products/Release-iphonesimulator/Capacitor.framework"
-
-          CORD_IOS="$DERIVED_DATA/Build/Products/Release-iphoneos/Cordova.framework"
-          CORD_SIM="$DERIVED_DATA/Build/Products/Release-iphonesimulator/Cordova.framework"
-
-          echo "Creating Capacitor.xcframework..."
+          # Create XCFrameworks
           xcodebuild -create-xcframework \
-            -framework "$CAP_IOS" \
-            -framework "$CAP_SIM" \
+            -framework "$DERIVED_DATA/Build/Products/Release-iphoneos/Capacitor.framework" \
+            -framework "$DERIVED_DATA/Build/Products/Release-iphonesimulator/Capacitor.framework" \
             -output "$OUT_DIR/Capacitor.xcframework"
 
-          echo "Creating Cordova.xcframework..."
           xcodebuild -create-xcframework \
-            -framework "$CORD_IOS" \
-            -framework "$CORD_SIM" \
+            -framework "$DERIVED_DATA/Build/Products/Release-iphoneos/Cordova.framework" \
+            -framework "$DERIVED_DATA/Build/Products/Release-iphonesimulator/Cordova.framework" \
             -output "$OUT_DIR/Cordova.xcframework"
 
       # --------------------------------------------------------------------
-      # Upload artifacts for SPM
+      # Zip XCFrameworks (SwiftPM requires .zip)
       # --------------------------------------------------------------------
-      - name: Upload XCFrameworks
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-xcframeworks
-          path: |
-            xcframeworks/Capacitor.xcframework
-            xcframeworks/Cordova.xcframework
-
-      # --------------------------------------------------------------------
-      # Zip XCFrameworks for SwiftPM
-      # --------------------------------------------------------------------
-      - name: Zip XCFrameworks
+      - name: Zip XCFrameworks for SwiftPM
         run: |
+          mkdir -p release
           cd xcframeworks
-          zip -r Capacitor.xcframework.zip Capacitor.xcframework
-          zip -r Cordova.xcframework.zip Cordova.xcframework
-
-      - name: Upload zipped XCFrameworks
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-xcframeworks-zip
-          path: |
-            xcframeworks/Capacitor.xcframework.zip
-            xcframeworks/Cordova.xcframework.zip
+          zip -r ../release/Capacitor.xcframework.zip Capacitor.xcframework
+          zip -r ../release/Cordova.xcframework.zip Cordova.xcframework
+          cd ..
+          ls -lh release
 
       # --------------------------------------------------------------------
-      # Create GitHub Release and upload assets
+      # Create GitHub Release (SPM-compatible)
       # --------------------------------------------------------------------
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: spm-xcframework-fix-v8.0.2
-          name: spm-xcframework-fix-v8.0.2
-          draft: false
-          prerelease: true
-          files: |
-            xcframeworks/Capacitor.xcframework.zip
-            xcframeworks/Cordova.xcframework.zip
+      - name: Create GitHub Release and upload XCFrameworks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME:-spm-manual}"
+
+          gh release create "$TAG_NAME" \
+            release/Capacitor.xcframework.zip \
+            release/Cordova.xcframework.zip \
+            --title "iOS XCFrameworks $TAG_NAME" \
+            --notes "Temporary SwiftPM workaround. Built with BUILD_LIBRARY_FOR_DISTRIBUTION=YES." \
+            --prerelease
