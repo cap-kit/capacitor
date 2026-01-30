@@ -142,3 +142,36 @@ jobs:
           path: |
             xcframeworks/Capacitor.xcframework
             xcframeworks/Cordova.xcframework
+
+      # --------------------------------------------------------------------
+      # Zip XCFrameworks for SwiftPM
+      # --------------------------------------------------------------------
+      - name: Zip XCFrameworks
+        run: |
+          cd xcframeworks
+          zip -r Capacitor.xcframework.zip Capacitor.xcframework
+          zip -r Cordova.xcframework.zip Cordova.xcframework
+
+      - name: Upload zipped XCFrameworks
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcframeworks-zip
+          path: |
+            xcframeworks/Capacitor.xcframework.zip
+            xcframeworks/Cordova.xcframework.zip
+
+      # --------------------------------------------------------------------
+      # Create GitHub Release and upload assets
+      # --------------------------------------------------------------------
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: spm-xcframework-fix-v8.0.2
+          name: spm-xcframework-fix-v8.0.2
+          draft: false
+          prerelease: true
+          files: |
+            xcframeworks/Capacitor.xcframework.zip
+            xcframeworks/Cordova.xcframework.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
