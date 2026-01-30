@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag name (e.g. ios-8.0.2-spm-fix1)'
+        description: 'Release tag name (e.g. ios-8.0.2-spm-fix2)'
         required: true
         type: string
 
@@ -134,7 +134,7 @@ jobs:
             -output "$OUT_DIR/Cordova.xcframework"
 
       # --------------------------------------------------------------------
-      # Zip XCFrameworks (SwiftPM requires .zip)
+      # Zip XCFrameworks
       # --------------------------------------------------------------------
       - name: Zip XCFrameworks
         run: |
@@ -145,19 +145,24 @@ jobs:
           cd ..
 
       # --------------------------------------------------------------------
-      # Compute SwiftPM checksums (CRITICAL STEP)
+      # Compute SwiftPM checksums
       # --------------------------------------------------------------------
       - name: Compute SwiftPM checksums
         id: checksums
         run: |
-          CAP_CHECKSUM=$(swift package compute-checksum release/Capacitor.xcframework.zip)
-          CORD_CHECKSUM=$(swift package compute-checksum release/Cordova.xcframework.zip)
+          CAP=$(swift package compute-checksum release/Capacitor.xcframework.zip)
+          CORD=$(swift package compute-checksum release/Cordova.xcframework.zip)
 
-          echo "Capacitor checksum: $CAP_CHECKSUM"
-          echo "Cordova checksum:   $CORD_CHECKSUM"
+          echo "capacitor=$CAP" >> "$GITHUB_OUTPUT"
+          echo "cordova=$CORD" >> "$GITHUB_OUTPUT"
 
-          echo "capacitor=$CAP_CHECKSUM" >> "$GITHUB_OUTPUT"
-          echo "cordova=$CORD_CHECKSUM" >> "$GITHUB_OUTPUT"
+          cat > release/checksums.json <<EOF
+          {
+            "tag": "${{ steps.tag.outputs.tag }}",
+            "capacitor": "$CAP",
+            "cordova": "$CORD"
+          }
+          EOF
 
       # --------------------------------------------------------------------
       # Create GitHub Release
@@ -171,6 +176,23 @@ jobs:
           gh release create "$TAG" \
             release/Capacitor.xcframework.zip \
             release/Cordova.xcframework.zip \
+            release/checksums.json \
             --title "iOS XCFrameworks $TAG" \
-            --notes "SwiftPM checksums:\n\nCapacitor: ${{ steps.checksums.outputs.capacitor }}\nCordova: ${{ steps.checksums.outputs.cordova }}" \
+            --notes "$(cat <<'EOF'
+          ### SwiftPM Binary Checksums
+
+          **Capacitor**
+          ```
+          ${{ steps.checksums.outputs.capacitor }}
+          ```
+
+          **Cordova**
+          ```
+          ${{ steps.checksums.outputs.cordova }}
+          ```
+
+          Built with `BUILD_LIBRARY_FOR_DISTRIBUTION=YES`
+          Temporary SwiftPM workaround
+          EOF
+          )" \
             --prerelease
