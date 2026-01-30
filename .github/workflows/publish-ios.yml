@@ -15,20 +15,10 @@ jobs:
       - name: Select Xcode 26
         run: sudo xcode-select --switch /Applications/Xcode_26.0.app
 
-      - name: Warm up simulators
-        run: xcrun simctl list > /dev/null
-
-      - name: Ensure iOS platform
-        run: xcodebuild -downloadPlatform iOS
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22.x
-
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          ref: 'main'
+          ref: 'spm-xcframework-fix'
 
       - name: Inspect repository layout
         run: |
@@ -46,6 +36,16 @@ jobs:
           echo
           echo "Find Capacitor.xcodeproj:"
           find . -name Capacitor.xcodeproj || true
+
+      - name: Warm up simulators
+        run: xcrun simctl list > /dev/null
+
+      - name: Ensure iOS platform
+        run: xcodebuild -downloadPlatform iOS
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
 
       # --------------------------------------------------------------------
       # Build XCFrameworks (ABI stable, SPM-safe)
