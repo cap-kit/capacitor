@@ -3,6 +3,10 @@ import { readJSON, writeJSON } from './fs.mjs';
 export const setPackageJsonDependencies = async (path, packages, key = 'dependencies') => {
   const pkg = await readJSON(path);
 
+  if (!pkg[key]) {
+    pkg[key] = {};
+  }
+
   for (const [dep, version] of Object.entries(packages)) {
     pkg[key][dep] = version;
   }

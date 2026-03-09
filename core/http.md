@@ -261,8 +261,6 @@ Make a Http DELETE Request to a server using native libraries.
 #### Blob
 
 A file-like object of immutable, raw data. Blobs represent data that isn't necessarily in a JavaScript-native format. The <a href="#file">File</a> interface is based on <a href="#blob">Blob</a>, inheriting blob functionality and expanding it to support files on the user's system.
-`Blob` class is a global reference for `require('node:buffer').Blob`
-https://nodejs.org/api/buffer.html#class-blob
 
 | Prop       | Type                |
 | ---------- | ------------------- |
@@ -444,8 +442,6 @@ An event which takes place in the DOM.
 #### EventTarget
 
 <a href="#eventtarget">EventTarget</a> is a DOM interface implemented by objects that can receive events and may have listeners for them.
-EventTarget is a DOM interface implemented by objects that can
-receive events and may have listeners for them.
 
 | Method                  | Signature                                                                                                                                                                                                              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -523,9 +519,6 @@ Provides information about files and allows JavaScript in a web page to access t
 
 
 #### URLSearchParams
-
-<a href="#urlsearchparams">`URLSearchParams`</a> class is a global reference for `require('url').URLSearchParams`
-https://nodejs.org/api/url.html#class-urlsearchparams
 
 | Method       | Signature                                                                                                                               | Description                                                                                                                |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -620,6 +613,11 @@ This Fetch API interface allows you to perform various actions on HTTP request a
 #### EventListenerOrEventListenerObject
 
 <code><a href="#eventlistener">EventListener</a> | <a href="#eventlistenerobject">EventListenerObject</a></code>
+
+
+#### AbortSignal
+
+<code>unknown</code>
 
 
 #### BufferSource

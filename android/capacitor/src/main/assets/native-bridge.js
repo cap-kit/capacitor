@@ -1028,8 +1028,6 @@ var nativeBridge = (function (exports) {
 
     dummy = initBridge;
 
-    Object.defineProperty(exports, '__esModule', { value: true });
-
     return exports;
 
 })({});

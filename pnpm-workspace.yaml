@@ -1,0 +1,10 @@
+packages:
+  - android
+  - ios
+  - cli
+  - core
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - nx
+  - swiftlint

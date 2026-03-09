@@ -1,8 +1,7 @@
 {
+  "npmClient": "pnpm",
+  "version": "8.2.0",
   "command": {
-    "bootstrap": {
-      "hoist": true
-    },
     "version": {
       "allowBranch": "main",
       "conventionalCommits": true,
@@ -11,6 +10,5 @@
       "tagVersionPrefix": ""
     }
   },
-  "version": "8.2.0",
   "$schema": "node_modules/lerna/schemas/lerna-schema.json"
 }

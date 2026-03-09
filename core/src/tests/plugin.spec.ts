@@ -166,7 +166,7 @@ describe('plugin', () => {
       },
     });
 
-    expect(async () => Awesome.mph()).rejects.toThrowError('nope!');
+    expect(async () => Awesome.mph()).rejects.toThrow('nope!');
   });
 
   it('missing method on lazy loaded implementation', async (done) => {

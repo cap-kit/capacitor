@@ -1,5 +1,5 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 
 const banner = '/*! Capacitor: https://capacitorjs.com/ - MIT License */';
 
@@ -10,7 +10,6 @@ export default {
       file: 'dist/capacitor.js',
       format: 'iife',
       name: 'capacitorExports',
-      preferConst: true,
       banner,
       sourcemap: true,
       plugins: [terser()],
@@ -18,7 +17,6 @@ export default {
     {
       file: 'dist/index.js',
       format: 'esm',
-      preferConst: true,
       banner,
       sourcemap: true,
     },
