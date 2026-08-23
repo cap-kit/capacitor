@@ -26,7 +26,7 @@
   "unpkg": "dist/capacitor.js",
   "scripts": {
     "build": "pnpm run clean && pnpm run docgen && pnpm run transpile && pnpm run rollup && pnpm run build:nativebridge",
-    "build:nativebridge": "rimraf build/native-bridge.js && tsc native-bridge.ts --target es2017 --moduleResolution node --outDir build --lib dom,es2017 --skipLibCheck true && rollup --config rollup.bridge.config.mjs",
+    "build:nativebridge": "rimraf build/native-bridge.js && tsc native-bridge.ts --target es2017 --moduleResolution node --outDir build --lib dom,dom.iterable,es2017 --skipLibCheck true && rollup --config rollup.bridge.config.mjs",
     "clean": "rimraf dist build types",
     "docgen": "docgen --api CapacitorCookiesPlugin --output-readme cookies.md && docgen --api CapacitorHttpPlugin --output-readme http.md && docgen --api SystemBarsPlugin --output-readme system-bars.md",
     "prepublishOnly": "pnpm run build",
